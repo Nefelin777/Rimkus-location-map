@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Інтерактивна карта світу</title>
-    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Interactive world map</title>
     <style>
         * {
             margin: 0;
@@ -13,7 +12,7 @@
         }
 
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: #f5f5f5;
             overflow: hidden;
         }
@@ -23,7 +22,7 @@
             width: 100vw;
             height: 100vh;
             overflow: hidden;
-            background: #e8f4f8;
+            background: white;
         }
 
         .map-container {
@@ -39,32 +38,15 @@
             height: 100%;
             object-fit: contain;
             display: block;
-            background: white;
         }
 
-        /* Точки локацій та регіональні маркери */
+        /* Точки локацій */
         .location-point {
             position: absolute;
-            width: 8px;
-            height: 8px;
+            width: 16px;
+            height: 16px;
             background: #FF6B6B;
-            border: 2px solid white;
-            border-radius: 50%;
-            cursor: pointer;
-            transform: translate(-50%, -50%);
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(255, 107, 107, 0.5);
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .region-marker {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background: #FF6B6B;
-            border: 2px solid white;
+            border: 3px solid white;
             border-radius: 50%;
             cursor: pointer;
             transform: translate(-50%, -50%);
@@ -73,15 +55,15 @@
             z-index: 100;
         }
 
-        .location-point:hover, .region-marker:hover {
-            width: 11px;
-            height: 11px;
+        .location-point:hover {
+            width: 22px;
+            height: 22px;
             background: #FF4757;
             box-shadow: 0 4px 16px rgba(255, 71, 87, 0.7);
             z-index: 200;
         }
 
-        .location-point::before, .region-marker::before {
+        .location-point::before {
             content: '';
             position: absolute;
             top: 50%;
@@ -105,6 +87,61 @@
             }
         }
 
+        /* Регіональні маркери (континенти) */
+        .region-marker {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+
+        .region-marker:hover {
+            transform: translate(-50%, -50%) scale(1.15);
+            z-index: 60;
+        }
+
+        .region-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(33, 150, 243, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+            border: 3px solid white;
+            transition: all 0.3s ease;
+        }
+
+        .region-marker:hover .region-icon {
+            background: rgba(33, 150, 243, 1);
+            box-shadow: 0 6px 20px rgba(33, 150, 243, 0.6);
+        }
+
+        .region-label {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            color: #333;
+            white-space: nowrap;
+            font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .region-marker:hover .region-label {
+            opacity: 1;
+        }
+
         /* Tooltip */
         .tooltip {
             position: fixed;
@@ -112,15 +149,13 @@
             color: white;
             padding: 12px 16px;
             border-radius: 8px;
-            font-size: 13px;
-            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
             white-space: nowrap;
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s ease;
             z-index: 1000;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-            max-width: 300px;
         }
 
         .tooltip.show {
@@ -130,48 +165,27 @@
         .tooltip strong {
             display: block;
             margin-bottom: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            font-family: 'Raleway', sans-serif;
+            font-size: 15px;
         }
 
-        /* Кнопка закриття (хрестик) */
+        /* Кнопка "Назад" */
         .back-button {
             position: fixed;
             top: 30px;
-            right: 30px;
-            width: 40px;
-            height: 40px;
+            left: 30px;
+            padding: 12px 24px;
             background: white;
             border: 2px solid #2196F3;
-            border-radius: 50%;
+            border-radius: 8px;
+            color: #2196F3;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
             opacity: 0;
             pointer-events: none;
             transition: all 0.3s ease;
             z-index: 1000;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .back-button::before,
-        .back-button::after {
-            content: '';
-            position: absolute;
-            width: 20px;
-            height: 2px;
-            background: #2196F3;
-            transition: background 0.3s ease;
-        }
-
-        .back-button::before {
-            transform: rotate(45deg);
-        }
-
-        .back-button::after {
-            transform: rotate(-45deg);
         }
 
         .back-button.show {
@@ -181,258 +195,216 @@
 
         .back-button:hover {
             background: #2196F3;
+            color: white;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
         }
 
-        .back-button:hover::before,
-        .back-button:hover::after {
-            background: white;
+        /* Заголовок */
+        .title {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            font-weight: bold;
+            color: #2C5F77;
+            text-align: center;
+            z-index: 900;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            opacity: 1;
+            transition: opacity 0.3s ease;
         }
 
+        .title.hide {
+            opacity: 0;
+        }
 
+        /* Індикатор масштабування */
+        .zoom-hint {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(33, 150, 243, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 900;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        .zoom-hint.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
 
         /* Responsive */
         @media (max-width: 768px) {
-            .location-point, .region-marker {
-                width: 7px;
-                height: 7px;
+            .region-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
             }
 
-            .location-point:hover, .region-marker:hover {
-                width: 10px;
-                height: 10px;
+            .region-label {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+
+            .location-point {
+                width: 14px;
+                height: 14px;
+            }
+
+            .title {
+                font-size: 24px;
+                top: 20px;
             }
 
             .back-button {
                 top: 20px;
-                right: 20px;
-                width: 36px;
-                height: 36px;
-            }
-
-            .back-button::before,
-            .back-button::after {
-                width: 18px;
-            }
-
-            .tooltip {
-                font-size: 12px;
-                padding: 10px 14px;
-                max-width: 250px;
-                white-space: normal;
+                left: 20px;
+                padding: 10px 20px;
+                font-size: 14px;
             }
         }
     </style>
 </head>
 <body>
-    <button class="back-button"></button>
+    <div class="title">НАША ГЛОБАЛЬНА ПРИСУТНІСТЬ</div>
+    <div class="zoom-hint">Натисніть на регіон для збільшення</div>
+    <button class="back-button">← Повернутися до карти світу</button>
 
     <div class="map-wrapper">
         <div class="map-container" id="mapContainer">
-            <img src="map.svg" alt="World Map" class="map-image" id="mapImage">
+            <img src="img.png" alt="World Map" class="map-image" id="mapImage">
 
-            <!-- Регіональні маркери -->
-            <div class="region-marker" style="top: 40%; left: 35%;" 
-                 data-region="usa" 
-                 data-scale="3.0" 
-                 data-x="35%" 
-                 data-y="40%"
-                 data-name="United States of America"></div>
+            <!-- Регіональні маркери (континенти) -->
+            <div class="region-marker" style="top: 35%; left: 18%;" data-region="north-america" data-scale="2.5" data-x="18%" data-y="35%">
+                <div class="region-icon">🌎</div>
+                <div class="region-label">Північна Америка</div>
+            </div>
 
-            <div class="region-marker" style="top: 30%; left: 35%;" 
-                 data-region="canada" 
-                 data-scale="2.8" 
-                 data-x="35%" 
-                 data-y="30%"
-                 data-name="Canada"></div>
+            <div class="region-marker" style="top: 65%; left: 22%;" data-region="south-america" data-scale="2.8" data-x="22%" data-y="65%">
+                <div class="region-icon">🌎</div>
+                <div class="region-label">Південна Америка</div>
+            </div>
 
-            <div class="region-marker" style="top: 32%; left: 50%;" 
-                 data-region="uk" 
-                 data-scale="4.0" 
-                 data-x="50%" 
-                 data-y="32%"
-                 data-name="United Kingdom"></div>
+            <div class="region-marker" style="top: 32%; left: 48%;" data-region="europe" data-scale="3.5" data-x="48%" data-y="32%">
+                <div class="region-icon">🌍</div>
+                <div class="region-label">Європа</div>
+            </div>
 
-            <div class="region-marker" style="top: 75%; left: 82%;" 
-                 data-region="australia" 
-                 data-scale="3.2" 
-                 data-x="82%" 
-                 data-y="75%"
-                 data-name="Australia"></div>
+            <div class="region-marker" style="top: 55%; left: 48%;" data-region="africa" data-scale="2.8" data-x="48%" data-y="55%">
+                <div class="region-icon">🌍</div>
+                <div class="region-label">Африка</div>
+            </div>
 
-            <div class="region-marker" style="top: 42%; left: 60%;" 
-                 data-region="uae" 
-                 data-scale="5.0" 
-                 data-x="60%" 
-                 data-y="42%"
-                 data-name="United Arab Emirates"></div>
+            <div class="region-marker" style="top: 40%; left: 68%;" data-region="asia" data-scale="2.5" data-x="68%" data-y="40%">
+                <div class="region-icon">🌏</div>
+                <div class="region-label">Азія</div>
+            </div>
 
-            <div class="region-marker" style="top: 82%; left: 88%;" 
-                 data-region="newzealand" 
-                 data-scale="5.0" 
-                 data-x="88%" 
-                 data-y="82%"
-                 data-name="New Zealand"></div>
+            <div class="region-marker" style="top: 75%; left: 82%;" data-region="oceania" data-scale="3.5" data-x="82%" data-y="75%">
+                <div class="region-icon">🌏</div>
+                <div class="region-label">Океанія</div>
+            </div>
 
-            <div class="region-marker" style="top: 55%; left: 68%;" 
-                 data-region="singapore" 
-                 data-scale="6.0" 
-                 data-x="68%" 
-                 data-y="55%"
-                 data-name="Singapore"></div>
+            <!-- Точки локацій (20 столиць) -->
+            <!-- Північна Америка -->
+            <div class="location-point" style="top: 29%; left: 12%;"
+                 data-name="Вашингтон"
+                 data-address="1600 Pennsylvania Ave, Washington D.C., USA"
+                 data-region="north-america"></div>
+            <div class="location-point" style="top: 25%; left: 15%;"
+                 data-name="Оттава"
+                 data-address="Parliament Hill, Ottawa, Canada"
+                 data-region="north-america"></div>
+            <div class="location-point" style="top: 42%; left: 15%;"
+                 data-name="Мехіко"
+                 data-address="Plaza de la Constitución, Ciudad de México, México"
+                 data-region="north-america"></div>
 
-            <!-- United Arab Emirates -->
-            <div class="location-point" style="top: 42%; left: 59.5%;"
-                 data-name="Abu Dhabi"
-                 data-address="Al Ghaith Tower, Office 1759 17th Floor, Hamdan Street"
-                 data-region="uae"></div>
-            <div class="location-point" style="top: 42.5%; left: 60.5%;"
-                 data-name="Dubai"
-                 data-address="Boulevard Plaza Tower 2, Level 23 Emaar Square"
-                 data-region="uae"></div>
+            <!-- Південна Америка -->
+            <div class="location-point" style="top: 62%; left: 26%;"
+                 data-name="Бразиліа"
+                 data-address="Praça dos Três Poderes, Brasília, Brasil"
+                 data-region="south-america"></div>
+            <div class="location-point" style="top: 69%; left: 21%;"
+                 data-name="Буенос-Айрес"
+                 data-address="Plaza de Mayo, Buenos Aires, Argentina"
+                 data-region="south-america"></div>
+            <div class="location-point" style="top: 57%; left: 20%;"
+                 data-name="Ліма"
+                 data-address="Plaza Mayor, Lima, Perú"
+                 data-region="south-america"></div>
 
-            <!-- New Zealand -->
-            <div class="location-point" style="top: 81%; left: 88%;"
-                 data-name="Auckland"
-                 data-address="1023, Level 2, 1 Broadway Newmarket"
-                 data-region="newzealand"></div>
+            <!-- Європа -->
+            <div class="location-point" style="top: 28%; left: 44%;"
+                 data-name="Лондон"
+                 data-address="10 Downing Street, London, UK"
+                 data-region="europe"></div>
+            <div class="location-point" style="top: 30%; left: 47%;"
+                 data-name="Берлін"
+                 data-address="Unter den Linden, Berlin, Deutschland"
+                 data-region="europe"></div>
+            <div class="location-point" style="top: 31%; left: 46%;"
+                 data-name="Париж"
+                 data-address="Place de la Concorde, Paris, France"
+                 data-region="europe"></div>
+            <div class="location-point" style="top: 34%; left: 50%;"
+                 data-name="Київ"
+                 data-address="вул. Хрещатик, 1, Київ, Україна"
+                 data-region="europe"></div>
 
-            <!-- Singapore -->
-            <div class="location-point" style="top: 55%; left: 68%;"
-                 data-name="Singapore"
-                 data-address="048616, 1 Raffles Place #20-01"
-                 data-region="singapore"></div>
+            <!-- Африка -->
+            <div class="location-point" style="top: 46%; left: 52%;"
+                 data-name="Каїр"
+                 data-address="Tahrir Square, Cairo, Egypt"
+                 data-region="africa"></div>
+            <div class="location-point" style="top: 57%; left: 50%;"
+                 data-name="Найробі"
+                 data-address="Kenyatta Avenue, Nairobi, Kenya"
+                 data-region="africa"></div>
+            <div class="location-point" style="top: 72%; left: 48%;"
+                 data-name="Кейптаун"
+                 data-address="Waterfront, Cape Town, South Africa"
+                 data-region="africa"></div>
 
-            <!-- Australia -->
-            <div class="location-point" style="top: 74%; left: 78%;"
-                 data-name="Adelaide"
-                 data-address="Level 1, 89 Pirie Street, Adelaide SA 5000"
-                 data-region="australia"></div>
-            <div class="location-point" style="top: 72%; left: 75%;"
-                 data-name="Perth"
-                 data-address="WA 6000, Level 8, 167 St Georges Terrace"
-                 data-region="australia"></div>
-            <div class="location-point" style="top: 71%; left: 81%;"
-                 data-name="Brisbane"
-                 data-address="Address and contact details"
-                 data-region="australia"></div>
-            <div class="location-point" style="top: 75%; left: 82%;"
-                 data-name="Sydney"
-                 data-address="NSW 2000, Grosvenor Place, Level 31, 225 George Street"
-                 data-region="australia"></div>
-            <div class="location-point" style="top: 76%; left: 80%;"
-                 data-name="Melbourne"
-                 data-address="VIC 3000, Level 15, 565 Bourke Street"
-                 data-region="australia"></div>
+            <!-- Азія -->
+            <div class="location-point" style="top: 34%; left: 55%;"
+                 data-name="Москва"
+                 data-address="Красная площадь, Москва, Россия"
+                 data-region="asia"></div>
+            <div class="location-point" style="top: 44%; left: 62%;"
+                 data-name="Делі"
+                 data-address="Rajpath, New Delhi, India"
+                 data-region="asia"></div>
+            <div class="location-point" style="top: 40%; left: 67%;"
+                 data-name="Пекін"
+                 data-address="Tiananmen Square, Beijing, China"
+                 data-region="asia"></div>
+            <div class="location-point" style="top: 36%; left: 73%;"
+                 data-name="Токіо"
+                 data-address="Chiyoda, Tokyo, Japan"
+                 data-region="asia"></div>
+            <div class="location-point" style="top: 51%; left: 69%;"
+                 data-name="Бангкок"
+                 data-address="Ratchadamnoen Avenue, Bangkok, Thailand"
+                 data-region="asia"></div>
 
-            <!-- United Kingdom -->
-            <div class="location-point" style="top: 31%; left: 50.5%;"
-                 data-name="Chorley"
-                 data-address="PR7 6TE, 2nd Floor, Building N7, CBTC, Euxton Lane"
-                 data-region="uk"></div>
-            <div class="location-point" style="top: 30%; left: 50%;"
-                 data-name="Glasgow"
-                 data-address="G2 5SG, UK 220 St. Vincent Street"
-                 data-region="uk"></div>
-            <div class="location-point" style="top: 32%; left: 50.2%;"
-                 data-name="Horsham"
-                 data-address="RH12 1TL, UK, Afon House, 3rd Floor, Worthing Road"
-                 data-region="uk"></div>
-            <div class="location-point" style="top: 32.5%; left: 50.5%;"
-                 data-name="London"
-                 data-address="EC3M 7AW, UK, 5th Floor, 40 Lime Street"
-                 data-region="uk"></div>
-
-            <!-- Canada -->
-            <div class="location-point" style="top: 28%; left: 34%;" data-name="Burlington" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 26%; left: 30%;" data-name="Calgary" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 28%; left: 34.5%;" data-name="Cambridge" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 26%; left: 31%;" data-name="Edmonton" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 28.5%; left: 35%;" data-name="London" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 28%; left: 35.5%;" data-name="Markham" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 28.5%; left: 35.2%;" data-name="Mississauga" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 29%; left: 37%;" data-name="Montreal" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 30%; left: 41%;" data-name="Newfoundland" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 29%; left: 39%;" data-name="Nova Scotia" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 29%; left: 37.5%;" data-name="Ottawa" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 27%; left: 32%;" data-name="Regina" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 28%; left: 35.8%;" data-name="Toronto" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 30%; left: 28%;" data-name="Vancouver" data-address="Address and contact details" data-region="canada"></div>
-            <div class="location-point" style="top: 31%; left: 28.5%;" data-name="Victoria" data-address="Address and contact details" data-region="canada"></div>
-
-            <!-- United States of America -->
-            <div class="location-point" style="top: 38%; left: 32%;" data-name="Albuquerque" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 32%; left: 23%;" data-name="Anchorage" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 35%; left: 36.5%;" data-name="Ann Arbor" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 42%; left: 36.5%;" data-name="Atlanta" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 40%; left: 34%;" data-name="Austin" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 40%; left: 38%;" data-name="Baltimore" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 42%; left: 37%;" data-name="Birmingham" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 35%; left: 40%;" data-name="Boston" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 35%; left: 36%;" data-name="Buffalo" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 43%; left: 35%;" data-name="Charleston" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 35.5%;" data-name="Charlotte" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 35%; left: 37%;" data-name="Chicago / Willlowbrook" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 40%; left: 36.5%;" data-name="Cincinnati" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 45%; left: 37%;" data-name="Clearwater" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 35.5%;" data-name="Cleveland" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 40%; left: 36%;" data-name="Columbus" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 43%; left: 34%;" data-name="Dallas / Fort Worth" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 40%; left: 32%;" data-name="Denver" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 33.5%;" data-name="Des Moines" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 35%; left: 36.8%;" data-name="Detroit" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 43%; left: 32%;" data-name="El Paso" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 47%; left: 35.5%;" data-name="Fort Lauderdale" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 47%; left: 35%;" data-name="Fort Myers" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 35%; left: 37.5%;" data-name="Grand Rapids" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 41%; left: 35.5%;" data-name="Greenville" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 44%; left: 21%;" data-name="Honolulu" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 41%; left: 34%;" data-name="Houston" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 40%; left: 37.5%;" data-name="Indianapolis" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 43%; left: 33%;" data-name="Jackson" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 41%; left: 35.5%;" data-name="Jacksonville" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 40%; left: 33.5%;" data-name="Kansas City" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 36.5%;" data-name="Knoxville" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 46%; left: 36%;" data-name="Lakewood Ranch" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 30%;" data-name="Las Vegas" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 41%; left: 33%;" data-name="Little Rock" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 38.5%;" data-name="Long Island" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 42%; left: 29%;" data-name="Los Angeles / Irvine" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 42.5%; left: 29.5%;" data-name="Los Angeles / Riverside" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 42%; left: 29.2%;" data-name="Los Angeles / Woodland Hills" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 39%; left: 37.5%;" data-name="Louisville" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 47%; left: 34%;" data-name="McAllen" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 33%;" data-name="Memphis" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 47%; left: 35.8%;" data-name="Miami" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 37.2%;" data-name="Milwaukee" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 33%; left: 33.5%;" data-name="Minneapolis" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 41%; left: 32.5%;" data-name="Mobile" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 37%;" data-name="Nashville" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 41%; left: 33.2%;" data-name="New Orleans" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 38%;" data-name="New York City" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 38%;" data-name="Norfolk" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 34%;" data-name="Oklahoma City" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 34%;" data-name="Omaha" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 45%; left: 35.5%;" data-name="Orlando" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 41%; left: 37.2%;" data-name="Pensacola" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 40%; left: 37.8%;" data-name="Philadelphia" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 42%; left: 30%;" data-name="Phoenix" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 35%;" data-name="Pittsburgh" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 33%; left: 28%;" data-name="Portland" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 36%;" data-name="Raleigh" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 39%; left: 37%;" data-name="Richmond" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 30%;" data-name="Salt Lake City" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 41%; left: 34.5%;" data-name="San Antonio" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 43%; left: 29%;" data-name="San Diego" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 39%; left: 28.5%;" data-name="San Francisco / Concord" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 39%; left: 28.8%;" data-name="San Francisco / San Jose" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 33%; left: 28.5%;" data-name="Seattle" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 43%; left: 32.5%;" data-name="Shreveport" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 36%; left: 37.8%;" data-name="South Bend" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 39%; left: 33%;" data-name="St. Louis" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 45%; left: 36.5%;" data-name="Tampa" data-address="Address and contact details" data-region="usa"></div>
-            <div class="location-point" style="top: 38%; left: 34.5%;" data-name="Tulsa" data-address="Address and contact details" data-region="usa"></div>
+            <!-- Океанія -->
+            <div class="location-point" style="top: 72%; left: 84%;"
+                 data-name="Сідней"
+                 data-address="Sydney Opera House, Sydney, Australia"
+                 data-region="oceania"></div>
+            <div class="location-point" style="top: 81%; left: 89%;"
+                 data-name="Веллінгтон"
+                 data-address="The Beehive, Wellington, New Zealand"
+                 data-region="oceania"></div>
         </div>
     </div>
 
@@ -444,11 +416,13 @@
         const tooltip = document.querySelector('.tooltip');
         const regionMarkers = document.querySelectorAll('.region-marker');
         const locationPoints = document.querySelectorAll('.location-point');
+        const title = document.querySelector('.title');
+        const zoomHint = document.querySelector('.zoom-hint');
 
         let currentZoom = 1;
         let isZoomed = false;
         let currentRegion = null;
-        let lastZoomParams = null;
+        let lastZoomParams = null; // Зберігаємо параметри останнього зуму
 
         // Функція зуму до регіону
         function zoomToRegion(marker) {
@@ -456,8 +430,11 @@
             const x = parseFloat(marker.dataset.x);
             const y = parseFloat(marker.dataset.y);
 
+            // Зберігаємо параметри зуму для зворотної анімації
             lastZoomParams = { scale, x, y };
 
+            // Правильний розрахунок трансформації
+            // Спочатку масштабуємо, потім зміщуємо так, щоб точка (x,y) опинилась в центрі екрану
             const translateX = 50 - x;
             const translateY = 50 - y;
 
@@ -486,10 +463,136 @@
             });
 
             backButton.classList.add('show');
+            title.classList.add('hide');
+            zoomHint.classList.add('hide');
         }
 
         // Функція повернення до початкового вигляду
         function resetZoom() {
+            // Якщо є збережені параметри зуму, використовуємо їх для зворотної анімації
             if (lastZoomParams) {
                 const { x, y } = lastZoomParams;
-                mapContainer.
+                mapContainer.style.transformOrigin = `${x}% ${y}%`;
+            } else {
+                mapContainer.style.transformOrigin = 'center center';
+            }
+
+            // Зворотна анімація - спочатку масштаб до 1, потім переміщення до 0
+            mapContainer.style.transform = 'translate(0, 0) scale(1)';
+
+            currentZoom = 1;
+            isZoomed = false;
+            currentRegion = null;
+
+            // Після завершення анімації повертаємо transform-origin в центр
+            setTimeout(() => {
+                mapContainer.style.transformOrigin = 'center center';
+                lastZoomParams = null;
+            }, 800); // 800ms - тривалість transition
+
+            // Показати регіональні маркери
+            regionMarkers.forEach(m => {
+                m.style.opacity = '1';
+                m.style.pointerEvents = 'all';
+            });
+
+            // Сховати всі точки на світовому вигляді
+            locationPoints.forEach(point => {
+                point.style.opacity = '0';
+                point.style.pointerEvents = 'none';
+            });
+
+            backButton.classList.remove('show');
+            title.classList.remove('hide');
+            zoomHint.classList.remove('hide');
+            tooltip.classList.remove('show');
+        }
+
+        // Обробка кліків на регіональні маркери
+        regionMarkers.forEach(marker => {
+            marker.addEventListener('click', () => {
+                zoomToRegion(marker);
+            });
+        });
+
+        // Обробка кнопки "Назад"
+        backButton.addEventListener('click', resetZoom);
+
+        // Обробка точок локацій
+        locationPoints.forEach(point => {
+            point.addEventListener('mouseenter', (e) => {
+                const name = point.dataset.name;
+                const address = point.dataset.address;
+
+                tooltip.innerHTML = `<strong>${name}</strong>${address}`;
+                tooltip.classList.add('show');
+
+                updateTooltipPosition(e);
+            });
+
+            point.addEventListener('mousemove', (e) => {
+                updateTooltipPosition(e);
+            });
+
+            point.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
+            });
+        });
+
+        // Функція оновлення позиції tooltip
+        function updateTooltipPosition(e) {
+            const x = e.clientX;
+            const y = e.clientY;
+
+            tooltip.style.left = x + 'px';
+            tooltip.style.top = (y - 60) + 'px';
+            tooltip.style.transform = 'translateX(-50%)';
+        }
+
+        // Початковий стан - сховати всі точки
+        locationPoints.forEach(point => {
+            point.style.opacity = '0';
+            point.style.pointerEvents = 'none';
+        });
+
+        // Підтримка touch-пристроїв
+        regionMarkers.forEach(marker => {
+            marker.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                zoomToRegion(marker);
+            });
+        });
+
+        locationPoints.forEach(point => {
+            point.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+
+                const name = point.dataset.name;
+                const address = point.dataset.address;
+
+                tooltip.innerHTML = `<strong>${name}</strong>${address}`;
+                tooltip.classList.toggle('show');
+
+                const rect = point.getBoundingClientRect();
+                tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+                tooltip.style.top = (rect.top - 60) + 'px';
+                tooltip.style.transform = 'translateX(-50%)';
+            });
+        });
+
+        // Закриття tooltip при кліку поза точками
+        document.addEventListener('click', (e) => {
+            if (!e.target.classList.contains('location-point')) {
+                tooltip.classList.remove('show');
+            }
+        });
+
+        // Клавіатурна навігація - ESC для повернення
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isZoomed) {
+                resetZoom();
+            }
+        });
+    </script>
+</body>
+</html>
